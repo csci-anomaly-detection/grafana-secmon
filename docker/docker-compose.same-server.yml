@@ -1,0 +1,99 @@
+version: '3.8'
+
+# Same Server Deployment - Resource Constrained
+# Deploy this on the main security monitoring server (54.226.81.54)
+# Strict memory and CPU limits to prevent interference with Suricata
+
+services:
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki-secmon
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-data:/loki
+      - ./config/loki-config-minimal.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - secmon-logging
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M  # Strict limit to prevent OOM
+          cpus: '0.5'   # Half CPU core maximum
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 60s  # Less frequent checks
+      timeout: 5s
+      retries: 2
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana-secmon
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+      - ./config/grafana-minimal.ini:/etc/grafana/grafana.ini:ro
+      - ./dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=secmon_admin_2025
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_LOG_LEVEL=warn  # Reduce logging overhead
+    networks:
+      - secmon-logging
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M  # Minimal Grafana instance
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    depends_on:
+      loki:
+        condition: service_healthy
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: promtail-secmon
+    volumes:
+      - ./config/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /srv/campus-sim/logs:/var/log/campus-sim:ro
+      - /var/log:/var/log:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - secmon-logging
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M  # Minimal for log shipping
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    depends_on:
+      loki:
+        condition: service_healthy
+
+networks:
+  secmon-logging:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# Use local directories to avoid Docker volume overhead
+# Create these directories manually: 
+# sudo mkdir -p /opt/secmon/{loki-data,grafana-data}
+# sudo chown -R 472:472 /opt/secmon/grafana-data  # Grafana user
+# sudo chown -R 10001:10001 /opt/secmon/loki-data  # Loki user

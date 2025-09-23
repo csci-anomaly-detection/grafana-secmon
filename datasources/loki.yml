@@ -1,0 +1,20 @@
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: loki
+          matcherRegex: "(?:flow_id=)(\\w+)"
+          name: "Flow ID"
+          url: "/explore?left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bflow_id%3D%5C%22$${__value.raw}%5C%22%7D%22%7D%5D"
+        - datasourceUid: loki
+          matcherRegex: "(?:src_ip=)([0-9\\.]+)"
+          name: "Source IP Logs"
+          url: "/explore?left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bsrc_ip%3D%5C%22$${__value.raw}%5C%22%7D%22%7D%5D"

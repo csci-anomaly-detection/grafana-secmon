@@ -1,0 +1,66 @@
+# Data and temporary files
+loki-data/
+grafana-data/
+*.log
+*.backup
+
+# Docker volumes and containers
+.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# Log files
+*.log
+logs/
+
+# Backup files
+*.backup.*
+*.bak
+
+# Local development overrides
+docker-compose.override.yml
+.env.local
+
+# Certificate files (if any)
+*.pem
+*.key
+*.crt
+
+# Grafana specific
+grafana.db*
+sessions/
+png/
+csv/
+pdf/
+plugins/*/
+
+# Loki specific
+chunks/
+wal/
+boltdb-shipper-*/
+compactor/
+
+# System files
+.fseventsd
+.TemporaryItems
+.DocumentRevisions-V100
+.PKInstallSandboxManager

@@ -1,0 +1,68 @@
+version: '3.8'
+
+# Local Development Deployment
+# Run this on your local machine (Mac) for testing and development
+# Uses minimal resources and sample data
+
+services:
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki-local
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../loki-data:/loki
+      - ../config/loki-config-minimal.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - logging-local
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana-local
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../grafana-data:/var/lib/grafana
+      - ../config/grafana-local.ini:/etc/grafana/grafana.ini:ro
+      - ../dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    networks:
+      - logging-local
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  # Sample log generator to simulate Suricata logs
+  log-generator:
+    image: alpine:latest
+    container_name: log-generator
+    volumes:
+      - ../sample-logs:/var/log/campus-sim
+      - ../scripts/generate-sample-logs.sh:/generate-logs.sh:ro
+    command: sh -c "chmod +x /generate-logs.sh && /generate-logs.sh"
+    networks:
+      - logging-local
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: promtail-local
+    volumes:
+      - ../config/promtail-local.yml:/etc/promtail/config.yml:ro
+      - ../sample-logs:/var/log/campus-sim:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - logging-local
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+networks:
+  logging-local:
+    driver: bridge

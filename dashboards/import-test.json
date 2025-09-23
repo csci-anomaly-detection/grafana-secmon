@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Security Monitoring - Suricata Overview",
+    "uid": "suricata-overview",
+    "panels": [
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "id": 1,
+        "title": "Recent Security Alerts",
+        "type": "logs",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            },
+            "expr": "{job=\"suricata\"} | json",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "sortOrder": "Descending"
+        }
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 39,
+    "version": 1
+  },
+  "overwrite": true
+}
