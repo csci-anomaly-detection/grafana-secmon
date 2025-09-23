@@ -13,7 +13,7 @@ NC='\033[0m'
 
 # Configuration
 DEPLOYMENT_DIR="/opt/grafana-secmon"
-REPO_URL="[YOUR_REPO_URL_HERE]"  # Replace with your actual repo URL
+REPO_URL="https://github.com/csci-anomaly-detection/grafana-secmon.git"
 SERVICE_USER="grafana-secmon"
 
 echo -e "${BLUE}🚀 Smart Grafana Security Monitoring Deployment${NC}"
