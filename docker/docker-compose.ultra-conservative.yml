@@ -11,8 +11,8 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - ./loki-data:/loki
-      - ./config/loki-config-minimal.yml:/etc/loki/local-config.yaml:ro
+      - ../loki-data:/loki
+      - ../config/loki-config-minimal.yml:/etc/loki/local-config.yaml:ro
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - secmon-logging
@@ -43,9 +43,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana-data:/var/lib/grafana
-      - ./config/grafana-minimal.ini:/etc/grafana/grafana.ini:ro
-      - ./datasources:/etc/grafana/provisioning/datasources:ro
+      - ../grafana-data:/var/lib/grafana
+      - ../config/grafana-minimal.ini:/etc/grafana/grafana.ini:ro
+      - ../datasources:/etc/grafana/provisioning/datasources:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secmon_admin_2025
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -85,8 +85,8 @@ services:
     image: grafana/promtail:3.0.0
     container_name: promtail-secmon
     volumes:
-      - ./config/promtail-config.yml:/etc/promtail/config.yml:ro
-      - /srv/campus-sim/logs:/var/log/campus-sim:ro  # Real Suricata logs
+      - ../config/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /srv/campus-sim/ai-sec-monitor/logs:/var/log/campus-sim:ro  # Real Suricata logs
     command: -config.file=/etc/promtail/config.yml
     networks:
       - secmon-logging
