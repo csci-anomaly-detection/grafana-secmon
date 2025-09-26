@@ -22,7 +22,7 @@ docker compose -f docker/docker-compose.ultra-conservative.yml ps
 
 ## 🌐 Access Information
 
-- **Grafana URL**: `http://your-server-ip:3000`
+- **Grafana URL**: `http://your-server-ip:3000` (maybe localhost, if you set up in your own machine and the ip stuff is not working)
 - **Username**: `admin`
 - **Password**: `secmon_admin_2025`
 
