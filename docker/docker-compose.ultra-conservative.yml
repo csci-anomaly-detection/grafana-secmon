@@ -46,6 +46,7 @@ services:
       - ../grafana-data:/var/lib/grafana
       - ../config/grafana-minimal.ini:/etc/grafana/grafana.ini:ro
       - ../datasources:/etc/grafana/provisioning/datasources:ro
+      - ../dashboards:/etc/grafana/provisioning/dashboards:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secmon_admin_2025
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -87,6 +88,7 @@ services:
     volumes:
       - ../config/promtail-config.yml:/etc/promtail/config.yml:ro
       - /srv/campus-sim/ai-sec-monitor/logs:/var/log/campus-sim:ro  # Real Suricata logs
+      - /srv/campus-sim/logs:/var/log/campus-sim-alt:ro  # Alternative log location for eve.json
     command: -config.file=/etc/promtail/config.yml
     networks:
       - secmon-logging
