@@ -1,0 +1,63 @@
+{
+  "id": null,
+  "title": "System Health Check",
+  "tags": ["health", "simple"],
+  "style": "dark",
+  "timezone": "",
+  "editable": true,
+  "graphTooltip": 0,
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Sources Active",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count by (job) (count_over_time({job=~\".*\"}[5m]))",
+          "instant": true,
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",  
+          "options": {
+            "renameByName": { "Metric": "Log Source", "Value": "Events (5m)" },
+            "excludeByName": { "Time": true }
+          }
+        }
+      ],
+      "options": { "showHeader": true }
+    },
+    {
+      "id": 2,
+      "title": "Recent Log Activity",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=~\".*\"}",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "options": { "showHeader": true }
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": {
+    "list": []
+  },
+  "uid": "health-check",
+  "weekStart": ""
+}

@@ -1,0 +1,233 @@
+{
+  "id": null,
+  "title": "Campus Security Monitor",
+  "tags": ["security", "network", "working"],
+  "style": "dark",
+  "timezone": "",
+  "editable": true,
+  "graphTooltip": 0,
+  "time": {
+    "from": "now-2h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "🚨 SECURITY ALERTS",
+      "type": "stat",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count_over_time({job=\"suricata\", event_type=\"alert\"}[2h])",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Alert Count"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "horizontal",
+        "textMode": "value",
+        "justifyMode": "center",
+        "displayMode": "basic"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "dark-green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 },
+              { "color": "dark-red", "value": 25 }
+            ]
+          },
+          "unit": "short",
+          "custom": {
+            "displayMode": "basic",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          },
+          "displayName": "Security Status",
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "NO ALERTS"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 1,
+                "to": 999999,
+                "result": {
+                  "text": "⚠️ ALERTS DETECTED"
+                }
+              },
+              "type": "range"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Network Connections (2h)",
+      "type": "stat",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count_over_time({job=\"zeek\", log_type=\"conn\"}[2h])",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 200 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "System Status",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count by (job) (count_over_time({job=~\"suricata|zeek\"}[10m]))",
+          "instant": true,
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { "Metric": "Component", "Value": "Log Events (10m)" },
+            "excludeByName": { "Time": true }
+          }
+        }
+      ],
+      "options": { "showHeader": true }
+    },
+    {
+      "id": 4,
+      "title": "Alert Activity",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"suricata\", event_type=\"alert\"}[5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Security Alerts/sec"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10 },
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Network Activity",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"zeek\", log_type=\"conn\"}[5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Network Connections/sec"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10 },
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Security Alerts - Essential Only",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\", event_type=\"alert\"} | json | line_format \"{{.alert.severity}} | {{.alert.signature}} | {{.src_ip}} → {{.dest_ip}}:{{.dest_port}} | {{.proto}}\"",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "options": { 
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "width": 400
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Recent Network Connections",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"zeek\", log_type=\"conn\"} | json | line_format \"{{.ts}} | {{.proto}} | {{.id.orig_h}}:{{.id.orig_p}} → {{.id.resp_h}}:{{.id.resp_p}} | {{.orig_bytes}} bytes\"",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "options": { "showHeader": true }
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": {
+    "list": []
+  },
+  "uid": "campus-security",
+  "weekStart": ""
+}

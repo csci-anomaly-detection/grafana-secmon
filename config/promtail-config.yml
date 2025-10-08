@@ -86,6 +86,58 @@ scrape_configs:
           source: timestamp
           format: 02/01/2006-15:04:05.000000
 
+  # Zeek Connection Logs (JSON format)
+  - job_name: zeek-conn
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: zeek
+          log_type: conn
+          environment: campus-sim
+          __path__: /var/log/campus-sim/zeek/conn.log
+    pipeline_stages:
+      - json:
+          expressions:
+            ts: ts
+            uid: uid
+            src_ip: id.orig_h
+            src_port: id.orig_p
+            dest_ip: id.resp_h
+            dest_port: id.resp_p
+            proto: proto
+            conn_state: conn_state
+            duration: duration
+            orig_bytes: orig_bytes
+            resp_bytes: resp_bytes
+      - labels:
+          proto:
+          src_ip:
+          dest_ip:
+          conn_state:
+      - timestamp:
+          source: ts
+          format: Unix
+
+  # Zeek Weird Logs
+  - job_name: zeek-weird
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: zeek
+          log_type: weird
+          environment: campus-sim
+          __path__: /var/log/campus-sim/zeek/weird.*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<ts>\d+\.\d+)\s+.*\s+(?P<weird_name>\S+)'
+      - labels:
+          weird_name:
+      - timestamp:
+          source: ts
+          format: Unix
+
   # System logs for context
   - job_name: syslog
     static_configs:

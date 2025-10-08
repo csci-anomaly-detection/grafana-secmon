@@ -89,6 +89,7 @@ services:
       - ../config/promtail-config.yml:/etc/promtail/config.yml:ro
       - /srv/campus-sim/ai-sec-monitor/logs:/var/log/campus-sim:ro  # Real Suricata logs
       - /srv/campus-sim/logs:/var/log/campus-sim-alt:ro  # Alternative log location for eve.json
+      - /srv/campus-sim/ai-sec-monitor/logs/zeek:/var/log/campus-sim/zeek:ro  # Zeek logs from ai-sec-monitor
     command: -config.file=/etc/promtail/config.yml
     networks:
       - secmon-logging
@@ -109,6 +110,8 @@ services:
     depends_on:
       loki:
         condition: service_healthy
+
+  # Zeek is running separately in ai-sec-monitor infrastructure
 
 networks:
   secmon-logging:
