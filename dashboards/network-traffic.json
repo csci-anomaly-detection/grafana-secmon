@@ -1,0 +1,611 @@
+{
+  "id": null,
+  "title": "Network Traffic Analysis",
+  "tags": ["network", "traffic", "connections", "zeek"],
+  "style": "dark",
+  "timezone": "",
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-2h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Protocol",
+        "multi": true,
+        "name": "protocol",
+        "options": [],
+        "query": "label_values({job=~\"suricata|zeek\"}, proto)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        }
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Source Network",
+        "multi": true,
+        "name": "src_network",
+        "options": [],
+        "query": "label_values({job=~\"suricata|zeek\"}, src_ip)",
+        "refresh": 2,
+        "regex": "/^(\\d+\\.\\d+)\\.\\d+\\.\\d+$/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Network Overview",
+      "type": "stat",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(count by (src_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Active Sources",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "expr": "count(count by (dest_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Destinations",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "expr": "count_over_time({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} [2h])",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Total Connections"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "reduceOptions": { 
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Traffic Volume by Protocol",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (proto) (rate({job=~\"suricata|zeek\", proto=~\"$protocol\"} |= \"\" [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull", "max", "mean"],
+          "values": ["value"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "normal", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Events per second",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "eps"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Top Talkers by Volume",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, count by (src_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { 
+              "Metric": "Source IP", 
+              "Value": "Event Count" 
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Event Count", "desc": true }]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Event Count" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "orange", "value": 500 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Event Count" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Connection States (Zeek)",
+      "type": "piechart",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count by (conn_state) (count_over_time({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} [2h]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "pieType": "pie",
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull", "percent"],
+          "values": ["value", "percent"]
+        },
+        "displayLabels": ["name", "percent"]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          },
+          "color": { "mode": "palette-classic" },
+          "mappings": [
+            { "options": { "S0": { "text": "Connection attempt seen, no reply" } }, "type": "value" },
+            { "options": { "S1": { "text": "Connection established, not terminated" } }, "type": "value" },
+            { "options": { "SF": { "text": "Normal establishment and termination" } }, "type": "value" },
+            { "options": { "REJ": { "text": "Connection attempt rejected" } }, "type": "value" },
+            { "options": { "S2": { "text": "Connection established and close attempt" } }, "type": "value" },
+            { "options": { "S3": { "text": "Connection established, originator aborted" } }, "type": "value" },
+            { "options": { "RSTO": { "text": "Connection established, responder aborted" } }, "type": "value" },
+            { "options": { "RSTR": { "text": "Responder sent a reset" } }, "type": "value" }
+          ]
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Port Distribution",
+      "type": "bargauge",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, count by (dest_port) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} | json | dest_port != \"\" [2h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "text": {},
+        "showUnfilled": true,
+        "sizing": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-GrYlRd" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [
+            { "options": { "22": { "text": "SSH" } }, "type": "value" },
+            { "options": { "80": { "text": "HTTP" } }, "type": "value" },
+            { "options": { "443": { "text": "HTTPS" } }, "type": "value" },
+            { "options": { "53": { "text": "DNS" } }, "type": "value" },
+            { "options": { "21": { "text": "FTP" } }, "type": "value" },
+            { "options": { "23": { "text": "Telnet" } }, "type": "value" },
+            { "options": { "25": { "text": "SMTP" } }, "type": "value" },
+            { "options": { "3389": { "text": "RDP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Network Communication Matrix",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | line_format \"{{.src_ip}}|{{.dest_ip}}|{{.proto}}|{{.dest_port}}|{{.duration}}|{{.orig_bytes}}|{{.resp_bytes}}|{{.conn_state}}\"",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "auto",
+            "source": "Line"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Field 1": "Source",
+              "Field 2": "Destination",
+              "Field 3": "Protocol",
+              "Field 4": "Port",
+              "Field 5": "Duration",
+              "Field 6": "Orig Bytes",
+              "Field 7": "Resp Bytes",
+              "Field 8": "State"
+            },
+            "excludeByName": { "Time": true, "Line": true, "id": true, "labels": true, "tsNs": true }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Duration" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Duration" },
+            "properties": [
+              { "id": "unit", "value": "s" },
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "color", "value": { "mode": "continuous-GrYlRd" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Orig Bytes" },
+            "properties": [
+              { "id": "unit", "value": "bytes" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Resp Bytes" },
+            "properties": [
+              { "id": "unit", "value": "bytes" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "Weird Events (Anomalies)",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, count by (weird_name) (count_over_time({job=\"zeek\", log_type=\"weird\"} [2h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { 
+              "Metric": "Anomaly Type", 
+              "Value": "Count (2h)" 
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Count (2h)", "desc": true }]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count (2h)" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Count (2h)" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "title": "Traffic Flow Visualization",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | orig_bytes != \"\" | unwrap orig_bytes [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Outbound Traffic"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | resp_bytes != \"\" | unwrap resp_bytes [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "legendFormat": "Inbound Traffic"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["lastNotNull", "max", "mean"],
+          "values": ["value"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Bytes per second",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Outbound Traffic" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Inbound Traffic" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "uid": "network-traffic",
+  "weekStart": ""
+}

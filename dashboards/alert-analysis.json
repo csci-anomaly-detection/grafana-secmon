@@ -1,0 +1,536 @@
+{
+  "id": null,
+  "title": "Alert Analysis - Deep Dive (new)",
+  "tags": ["security", "alerts", "analysis", "detailed"],
+  "style": "dark",
+  "timezone": "",
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Severity",
+        "multi": true,
+        "name": "severity",
+        "options": [],
+        "query": "label_values({job=\"suricata\", event_type=\"alert\"}, alert_severity)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        }
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Category",
+        "multi": true,
+        "name": "category",
+        "options": [],
+        "query": "label_values({job=\"suricata\", event_type=\"alert\"}, alert_category)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        }
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Source IP",
+        "multi": true,
+        "name": "src_ip",
+        "options": [],
+        "query": "label_values({job=\"suricata\", event_type=\"alert\"}, src_ip)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Alert Frequency Heatmap",
+      "type": "heatmap",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (le) (rate({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} |= \"\" [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {},
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "exemplars": { "color": "rgba(255,0,255,0.7)" },
+        "filterValues": { "le": 1e-9 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "show": true, "yHistogram": false },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "short"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "scaleDistribution": { "type": "linear" }
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Alert Signatures by Frequency",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(15, count by (alert_signature) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json [6h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 8 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { 
+              "Metric": "Alert Signature", 
+              "Value": "Count (6h)" 
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Count (6h)", "desc": true }]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count (6h)" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Count (6h)" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Alert Signature" },
+            "properties": [
+              { "id": "custom.width", "value": 400 }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "title": "Source IP Analysis",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, count by (src_ip) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} [6h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { 
+              "Metric": "Source IP", 
+              "Value": "Alert Count" 
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Alert Count", "desc": true }]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Alert Count" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Alert Count" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Alert Trend by Severity",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (alert_severity) (rate({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} |= \"\" [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["lastNotNull", "max", "mean"],
+          "values": ["value"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Alerts per second",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*1.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+              { "id": "displayName", "value": "High Severity" }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*2.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "displayName", "value": "Medium Severity" }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*3.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } },
+              { "id": "displayName", "value": "Low Severity" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Communication Patterns",
+      "type": "nodeGraph",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json | line_format \"{{.src_ip}} {{.dest_ip}} {{.alert.severity}}\"",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "options": {
+        "nodes": {
+          "mainStatUnit": "short",
+          "secondaryStatUnit": "short",
+          "arcs": [
+            { "field": "Value", "color": "red" }
+          ]
+        },
+        "edges": {
+          "mainStatUnit": "short",
+          "secondaryStatUnit": "short"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Detailed Alert Log (Live Feed)",
+      "type": "logs",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 26 },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Alert Correlation Matrix",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json | line_format \"{{.timestamp}}|{{.src_ip}}|{{.dest_ip}}|{{.proto}}|{{.src_port}}|{{.dest_port}}|{{.alert.signature_id}}|{{.alert.signature}}|{{.alert.category}}|{{.alert.severity}}\"",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 38 },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "auto",
+            "source": "Line"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Field 1": "Timestamp",
+              "Field 2": "Source IP",
+              "Field 3": "Dest IP",
+              "Field 4": "Protocol",
+              "Field 5": "Src Port",
+              "Field 6": "Dst Port",
+              "Field 7": "Signature ID",
+              "Field 8": "Alert Signature",
+              "Field 9": "Category",
+              "Field 10": "Severity"
+            },
+            "excludeByName": { "Time": true, "Line": true, "id": true, "labels": true, "tsNs": true }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Timestamp" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": { "text": "High", "color": "red" },
+                "2": { "text": "Medium", "color": "orange" },
+                "3": { "text": "Low", "color": "yellow" }
+              },
+              "type": "value"
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Severity" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Alert Signature" },
+            "properties": [
+              { "id": "custom.width", "value": 300 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Category" },
+            "properties": [
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Timestamp" },
+            "properties": [
+              { "id": "custom.width", "value": 160 }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "uid": "alert-analysis",
+  "weekStart": ""
+}

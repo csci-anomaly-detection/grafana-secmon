@@ -20,16 +20,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M      # VERY conservative - 256MB max
-          cpus: '0.25'      # Quarter CPU core only
+          memory: 512M      # Doubled from 256MB - still conservative
+          cpus: '0.5'       # Half CPU core - minimal increase
         reservations:
-          memory: 128M      # Minimum guaranteed
-          cpus: '0.1'       # 10% CPU minimum
+          memory: 256M      # Doubled minimum
+          cpus: '0.2'       # 20% CPU minimum
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
-      interval: 90s         # Less frequent health checks
-      timeout: 5s
-      retries: 2
+      interval: 60s         # Slightly more frequent checks
+      timeout: 10s          # Increased timeout for queries
+      retries: 3
       start_period: 60s
     logging:
       driver: "json-file"
@@ -62,16 +62,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M      # VERY conservative
-          cpus: '0.25'      # Quarter CPU core
+          memory: 384M      # Modest increase from 256MB
+          cpus: '0.4'       # 40% CPU core - still conservative
         reservations:
-          memory: 128M
-          cpus: '0.1'
+          memory: 192M      # Increased minimum
+          cpus: '0.15'      # 15% CPU minimum
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
-      interval: 90s
-      timeout: 5s
-      retries: 2
+      interval: 60s         # More frequent than before
+      timeout: 10s          # Increased timeout
+      retries: 3
       start_period: 60s
     logging:
       driver: "json-file"
