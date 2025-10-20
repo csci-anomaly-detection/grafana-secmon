@@ -1,6 +1,6 @@
 {
   "id": null,
-  "title": "Network Traffic Analysis",
+  "title": "Network Traffic Analysis (zeek information)",
   "tags": ["network", "traffic", "connections", "zeek"],
   "style": "dark",
   "timezone": "",

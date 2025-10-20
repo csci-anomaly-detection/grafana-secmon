@@ -6,68 +6,47 @@ This guide provides detailed information about each dashboard in the AI-Augmente
 
 | Dashboard | Purpose | Best For | Complexity |
 |-----------|---------|----------|------------|
-| [Security Log Spreadsheet](#-security-log-spreadsheet) | Clean data view | Daily review, reports | ⭐ Simple |
-| [Security Overview](#-security-overview---campus-network) | Command center | Operations, executives | ⭐⭐ Medium |
+| [Security Master Spreadsheet](#-security-master-spreadsheet) | Unified view | All-in-one monitoring | ⭐⭐ Medium |
 | [Alert Analysis](#-alert-analysis---deep-dive) | Investigations | Analysts, incidents | ⭐⭐⭐ Advanced |
 | [Network Traffic](#-network-traffic-analysis) | Network monitoring | Admins, capacity | ⭐⭐⭐ Advanced |
-| [Simple Monitor](#-simple-security-monitor) | Basic checks | Testing, troubleshooting | ⭐ Simple |
 
 ---
 
-## 📋 Security Log Spreadsheet
-**⏱ Time Range:** Last 1 hour | **🔄 Refresh:** 30 seconds
+## � Security Master Spreadsheet
+**⏱ Time Range:** Last 6 hours | **🔄 Refresh:** 30 seconds
 
 ### Purpose
-The cleanest, most organized view of your security data - designed like a spreadsheet for easy reading and analysis.
+Unified all-in-one dashboard combining critical elements from multiple views into a single comprehensive monitoring interface.
 
 ### What You'll See
-- **Live Security Events Table**: Real-time stream of security alerts
-- **Color-Coded Severity**: 🔴 High, 🟠 Medium, 🟡 Low priority alerts
-- **Clean Columns**: Time, Severity, Source, Destination, Protocol, Alert Description
-- **Summary Statistics**: Quick counts of alert types and frequency
-- **Filtering Options**: By severity level, category, source IP
+- **📊 Current Alert Summary**: Visual count of High/Medium/Low severity alerts with emoji indicators (🔴 High, 🟠 Medium, 🟡 Low)
+- **📈 Alert Timeline**: 6-hour trend graph showing alert patterns by severity over time
+- **📋 Alert Signatures by Frequency**: Top 15 most common attack signatures detected
+- **🚨 Recent Critical Alerts**: Real-time table of Severity 1 (High) alerts with full details
+- **📜 All Live Security Logs**: Real-time log feed with JSON formatting and full event details
 
 ### Best Use Cases
-- ✅ **Daily log review** - Start your day here
-- ✅ **Executive reporting** - Clean data for presentations  
-- ✅ **Data export** - Easy to copy/paste for reports
-- ✅ **Incident documentation** - Clear timeline view
-- ✅ **Trend analysis** - See patterns in alert frequency
+- ✅ **Primary monitoring dashboard** - Single view for most common tasks
+- ✅ **Daily security review** - All essential information in one place
+- ✅ **Incident response** - Quick access to critical alerts and live logs
+- ✅ **SOC operations** - Comprehensive view for security analysts
+- ✅ **Executive briefings** - High-level summary with drill-down capability
+- ✅ **Shift handovers** - Complete picture of security posture
+
+### Key Features
+- **Compact Summary**: Horizontal stat panel showing all severity levels at once
+- **Interactive Filters**: Severity and Category variables for focused analysis
+- **Color-Coded Data**: Consistent red/orange/yellow scheme across all panels
+- **Real-time Updates**: 30-second refresh keeps data current
+- **Comprehensive Coverage**: Combines overview, deep-dive, and log viewing
 
 ### Navigation Tips
-- Use severity filters to focus on high-priority events
-- Adjust "Max Results" dropdown (25, 50, 100, 200, 500) for different views
-- Sort by any column by clicking the header
-- Use the search box to find specific IPs or signatures
-
----
-
-## 🏠 Security Overview - Campus Network  
-**⏱ Time Range:** Last 1 hour | **🔄 Refresh:** 30 seconds
-
-### Purpose
-Your main security command center dashboard providing high-level situational awareness.
-
-### What You'll See
-- **🚨 Current Threat Level**: Visual threat indicator with severity breakdown
-- **📊 Alert Categories**: Pie chart showing types of security events
-- **🌐 Network Activity**: Summary of active sources, targets, and protocols
-- **📈 Alert Timeline**: Trend graph showing alert patterns over time
-- **🎯 Top Sources/Targets**: Tables showing most active IP addresses
-- **🔗 Protocol Distribution**: Bar chart of network protocols in use
-
-### Best Use Cases
-- ✅ **Security Operations Center (SOC)** - Wall display dashboard
-- ✅ **Daily briefings** - Quick security status updates
-- ✅ **Executive summaries** - High-level security posture
-- ✅ **Shift handovers** - What happened during previous shift
-- ✅ **Compliance reporting** - Security monitoring evidence
-
-### Key Metrics
-- **Threat Level Colors**: Green (safe) → Yellow (caution) → Orange (elevated) → Red (critical)
-- **Active Sources**: Unique IP addresses generating alerts
-- **Unique Targets**: Systems being targeted by attacks
-- **Protocol Mix**: TCP, UDP, ICMP traffic distribution
+- Start with the Alert Summary to see overall threat level
+- Check the Timeline for patterns and trends
+- Review Top Signatures to identify recurring attacks
+- Investigate Critical Alerts table for immediate threats
+- Use Live Logs panel for detailed event inspection
+- Apply Severity/Category filters to focus analysis
 
 ---
 
@@ -132,34 +111,12 @@ Network behavior monitoring focusing on traffic patterns, connections, and anoma
 
 ---
 
-## 🎯 Simple Security Monitor
-**⏱ Time Range:** Last 30 minutes | **🔄 Refresh:** 30 seconds
-
-### Purpose
-Basic monitoring dashboard with simplified queries for system testing and troubleshooting.
-
-### What You'll See
-- **🚨 Security Alerts Counter**: Simple count of recent alerts
-- **🔴 High Severity Alerts**: Critical security events
-- **📊 System Status**: Basic health check of log sources
-- **📋 Recent Alerts Table**: Simple table of latest security events
-
-### Best Use Cases
-- ✅ **System testing** - Verify dashboards are working
-- ✅ **Troubleshooting** - When complex dashboards have issues
-- ✅ **Quick checks** - Fast security status verification
-- ✅ **New user training** - Simple introduction to the system
-- ✅ **Mobile viewing** - Optimized for smaller screens
-
----
-
 ## 🛠️ Dashboard Usage Tips
 
 ### Getting Started
-1. **Start with "Security Log Spreadsheet"** - easiest to understand
-2. **Check "Simple Security Monitor"** - verify system is working
-3. **Move to "Security Overview"** - get the big picture
-4. **Use specialized dashboards** as needed for investigations
+1. **Start with "Security Master Spreadsheet"** - unified view of all critical information
+2. **Use "Alert Analysis - Deep Dive"** - for detailed investigations
+3. **Check "Network Traffic Analysis"** - for network-specific issues
 
 ### Troubleshooting
 - **"Legacy query" errors**: Dashboards still work, ignore the errors
@@ -168,10 +125,10 @@ Basic monitoring dashboard with simplified queries for system testing and troubl
 - **Query timeouts**: System is configured with 60-second timeouts
 
 ### Performance Optimization
-- **Shorter time ranges** load faster (30min vs 6 hours)
+- **Shorter time ranges** load faster (1 hour vs 6 hours)
 - **Fewer concurrent users** - share screens when possible
 - **Close unused browser tabs** - each dashboard uses resources
-- **Use "Simple Security Monitor"** when system is under load
+- **Apply filters** to reduce query load on the system
 
 ### Best Practices
 - **Set appropriate time ranges** based on your analysis needs

@@ -1,13 +1,13 @@
 {
   "id": null,
-  "title": "Security Log Spreadsheet",
-  "tags": ["security", "logs", "spreadsheet", "clean"],
+  "title": "Security Monitoring Spreadsheet (main)",
+  "tags": ["security", "spreadsheet", "master", "comprehensive"],
   "style": "dark",
   "timezone": "",
   "editable": true,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
   },
   "refresh": "30s",
@@ -62,33 +62,13 @@
           "type": "loki",
           "uid": "${DS_LOKI}"
         }
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "50",
-          "value": "50"
-        },
-        "hide": 0,
-        "label": "Max Results",
-        "name": "max_results",
-        "options": [
-          { "selected": false, "text": "25", "value": "25" },
-          { "selected": true, "text": "50", "value": "50" },
-          { "selected": false, "text": "100", "value": "100" },
-          { "selected": false, "text": "200", "value": "200" },
-          { "selected": false, "text": "500", "value": "500" }
-        ],
-        "query": "25,50,100,200,500",
-        "skipUrlSync": false,
-        "type": "custom"
       }
     ]
   },
   "panels": [
     {
       "id": 1,
-      "title": "📊 Current Alert Summary",
+      "title": "� Current Alert Summary",
       "type": "stat",
       "targets": [
         {
@@ -167,16 +147,172 @@
     },
     {
       "id": 2,
-      "title": "🚨 Live Security Events (Clean View)",
+      "title": "Alert Timeline (Last 6 Hours)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (alert_severity) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\"} |= \"\" [5m]))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull", "max", "mean"],
+          "values": ["value"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "alert_severity=1" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+              { "id": "displayName", "value": "High (Sev 1)" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "alert_severity=2" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "displayName", "value": "Medium (Sev 2)" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "alert_severity=3" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } },
+              { "id": "displayName", "value": "Low (Sev 3)" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "title": "Alert Signatures by Frequency (Top 15)",
       "type": "table",
       "targets": [
         {
           "refId": "A",
-          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json | line_format \"{{.timestamp}}|{{.alert.severity}}|{{.src_ip}}:{{.src_port}}|{{.dest_ip}}:{{.dest_port}}|{{.proto}}|{{.alert.signature_id}}|{{.alert.signature}}|{{.alert.category}}\" | limit $max_results",
+          "expr": "topk(15, count by (alert_signature) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json [6h])))",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "instant": true
+        }
+      ],
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 },
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { 
+              "Metric": "Alert Signature", 
+              "Value": "Count (6h)" 
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Count (6h)", "desc": true }]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count (6h)" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Count (6h)" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "custom.width", "value": 150 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Alert Signature" },
+            "properties": [
+              { "id": "custom.width", "value": 600 }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Recent Critical Alerts (Severity 1)",
+      "type": "table",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=\"1\"} | json | line_format \"{{.timestamp}}|{{.src_ip}}:{{.src_port}}|{{.dest_ip}}:{{.dest_port}}|{{.proto}}|{{.alert.signature}}|{{.alert.category}}\"",
           "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
         }
       ],
-      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 4 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 22 },
       "transformations": [
         {
           "id": "extractFields",
@@ -189,34 +325,20 @@
           "id": "organize",
           "options": {
             "renameByName": {
-              "Field 1": "Time",
-              "Field 2": "Sev",
-              "Field 3": "Source",
-              "Field 4": "Destination",
-              "Field 5": "Proto",
-              "Field 6": "SID",
-              "Field 7": "Alert Description",
-              "Field 8": "Category"
+              "Field 1": "Timestamp",
+              "Field 2": "Source",
+              "Field 3": "Destination", 
+              "Field 4": "Protocol",
+              "Field 5": "Alert Signature",
+              "Field 6": "Category"
             },
-            "excludeByName": { 
-              "Time": true, 
-              "Line": true, 
-              "id": true, 
-              "labels": true, 
-              "tsNs": true 
-            }
+            "excludeByName": { "Time": true, "Line": true, "id": true, "labels": true, "tsNs": true }
           }
         }
       ],
       "options": {
         "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Time" }],
-        "footer": {
-          "show": false,
-          "reducer": ["sum"],
-          "countRows": false,
-          "fields": ""
-        }
+        "sortBy": [{ "desc": true, "displayName": "Timestamp" }]
       },
       "fieldConfig": {
         "defaults": {
@@ -226,67 +348,12 @@
             "inspect": false,
             "filterable": true
           },
-          "mappings": [
-            {
-              "options": {
-                "1": { "text": "🔴 HIGH", "color": "red" },
-                "2": { "text": "🟠 MED", "color": "orange" },
-                "3": { "text": "🟡 LOW", "color": "yellow" }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "transparent", "value": null }
-            ]
-          }
+          "mappings": [],
+          "color": { "mode": "fixed", "fixedColor": "red" }
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Time" },
-            "properties": [
-              { "id": "custom.width", "value": 180 },
-              { "id": "unit", "value": "time:YYYY-MM-DD HH:mm:ss" }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Sev" },
-            "properties": [
-              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
-              { "id": "custom.width", "value": 80 },
-              { "id": "custom.align", "value": "center" }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Source" },
-            "properties": [
-              { "id": "custom.width", "value": 140 }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Destination" },
-            "properties": [
-              { "id": "custom.width", "value": 140 }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Proto" },
-            "properties": [
-              { "id": "custom.width", "value": 60 },
-              { "id": "custom.align", "value": "center" }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "SID" },
-            "properties": [
-              { "id": "custom.width", "value": 80 },
-              { "id": "custom.align", "value": "center" }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Alert Description" },
+            "matcher": { "id": "byName", "options": "Alert Signature" },
             "properties": [
               { "id": "custom.width", "value": 350 }
             ]
@@ -294,144 +361,39 @@
           {
             "matcher": { "id": "byName", "options": "Category" },
             "properties": [
-              { "id": "custom.width", "value": 250 }
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Timestamp" },
+            "properties": [
+              { "id": "custom.width", "value": 180 }
             ]
           }
         ]
       }
     },
     {
-      "id": 3,
-      "title": "📈 Alert Frequency (Last Hour)",
-      "type": "table",
+      "id": 5,
+      "title": "All Live Security Logs (Real-time Feed)",
+      "type": "logs",
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(20, count by (alert_signature) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json [1h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "instant": true
+          "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json",
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
         }
       ],
-      "gridPos": { "h": 12, "w": 12, "x": 0, "y": 24 },
-      "transformations": [
-        { "id": "seriesToRows", "options": {} },
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": { 
-              "Metric": "Alert Signature", 
-              "Value": "Count" 
-            },
-            "excludeByName": { "Time": true }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [{ "field": "Count", "desc": true }]
-          }
-        }
-      ],
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 32 },
       "options": {
-        "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Count" }]
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": { "type": "auto" },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 2 },
-              { "color": "orange", "value": 5 },
-              { "color": "red", "value": 10 }
-            ]
-          },
-          "color": { "mode": "thresholds" }
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "Count" },
-            "properties": [
-              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
-              { "id": "custom.width", "value": 80 }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": 4,
-      "title": "🌐 Network Activity Summary",
-      "type": "table",
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "topk(15, count by (src_ip) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} [1h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "instant": true
-        }
-      ],
-      "gridPos": { "h": 12, "w": 12, "x": 12, "y": 24 },
-      "transformations": [
-        { "id": "seriesToRows", "options": {} },
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": { 
-              "Metric": "Source IP", 
-              "Value": "Alerts" 
-            },
-            "excludeByName": { "Time": true }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [{ "field": "Alerts", "desc": true }]
-          }
-        }
-      ],
-      "options": {
-        "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Alerts" }]
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": { "type": "auto" },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 5 },
-              { "color": "orange", "value": 15 },
-              { "color": "red", "value": 30 }
-            ]
-          },
-          "color": { "mode": "thresholds" }
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "Alerts" },
-            "properties": [
-              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
-              { "id": "custom.width", "value": 80 }
-            ]
-          }
-        ]
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
       }
     }
   ],
@@ -454,6 +416,6 @@
       }
     ]
   },
-  "uid": "security-spreadsheet",
+  "uid": "security-master-spreadsheet",
   "weekStart": ""
 }

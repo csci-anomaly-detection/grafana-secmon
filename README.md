@@ -4,13 +4,13 @@ This repository contains the logging and visualization infrastructure for the AI
 
 ## 📊 Dashboard Overview
 
-The system includes **5 comprehensive security dashboards** designed for different monitoring needs:
+The system includes **3 comprehensive security dashboards** designed for different monitoring needs:
 
-### 🏠 **1. Security Overview - Campus Network** 
-- **Purpose**: Main security command center dashboard
-- **Time Range**: Last 1 hour | **Refresh**: 30 seconds
-- **Best For**: Daily monitoring, executive briefings, security operations center
-- **Shows**: Threat levels, alert summaries, top sources/targets, real-time metrics
+### 📊 **1. Security Master Spreadsheet** ⭐ **UNIFIED VIEW**
+- **Purpose**: All-in-one dashboard combining critical monitoring elements
+- **Time Range**: Last 6 hours | **Refresh**: 30 seconds
+- **Best For**: Primary monitoring, daily operations, SOC, incident response
+- **Shows**: Alert summary, timeline, top signatures, critical alerts, live logs
 
 ### 🔍 **2. Alert Analysis - Deep Dive**
 - **Purpose**: Detailed incident investigation and forensic analysis  
@@ -24,19 +24,7 @@ The system includes **5 comprehensive security dashboards** designed for differe
 - **Best For**: Network administrators, capacity planning, anomaly detection
 - **Shows**: Connection patterns, protocol distribution, port analysis, traffic flows
 
-### 📋 **4. Security Log Spreadsheet** ⭐ **CLEAN VIEW**
-- **Purpose**: Excel-like clean view of security events (minimal clutter)
-- **Time Range**: Last 1 hour | **Refresh**: 30 seconds
-- **Best For**: Log review, reporting, exporting data, executive summaries
-- **Shows**: Real-time security events in organized table format with color-coded severity
-
-### 🎯 **5. Simple Security Monitor**
-- **Purpose**: Basic monitoring with simplified queries
-- **Time Range**: Last 30 minutes | **Refresh**: 30 seconds
-- **Best For**: System testing, when complex dashboards have issues
-- **Shows**: Basic alert counts, system health checks
-
-> 💡 **Tip**: Start with "Security Log Spreadsheet" for the cleanest, most organized view of your security data!
+> � **Tip**: Start with "Security Master Spreadsheet" for a comprehensive unified view of all critical security information!
 
 ## 📚 Documentation
 
@@ -53,7 +41,7 @@ This guide includes:
 ### 🚀 **Quick Access**
 - **Grafana URL**: `http://your-server-ip:3000`
 - **Default Login**: `admin` / `secmon_admin_2025`
-- **Recommended Starting Point**: "Security Log Spreadsheet" dashboard
+- **Recommended Starting Point**: "Security Master Spreadsheet" dashboard
 
 ## Quick Start
 

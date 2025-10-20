@@ -28,11 +28,13 @@ docker compose -f docker/docker-compose.ultra-conservative.yml ps
 
 ## 📊 Available Dashboards
 
-After logging in, go to **Dashboards** → **Security** folder:
+After logging in, go to **Dashboards** → Browse:
 
-1. **Security Monitoring - Suricata Overview** - Main security dashboard
-2. **Security Monitoring - Comprehensive Suricata Dashboard** - Detailed analytics  
-3. **Network Traffic Analysis** - Traffic patterns
+1. **Security Master Spreadsheet** ⭐ - Unified all-in-one monitoring dashboard
+2. **Alert Analysis - Deep Dive** - Detailed forensic investigation  
+3. **Network Traffic Analysis** - Network behavior and traffic patterns
+
+> 💡 **Start with "Security Master Spreadsheet"** for comprehensive security monitoring in a single view!
 
 ## 🔧 Troubleshooting
 
