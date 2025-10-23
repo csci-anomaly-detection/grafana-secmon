@@ -10,7 +10,7 @@
     "from": "now-2h",
     "to": "now"
   },
-  "refresh": "30s",
+  "refresh": "10s",
   "schemaVersion": 39,
   "version": 1,
   "templating": {
@@ -36,7 +36,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       },
       {
@@ -60,7 +60,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       }
     ]
@@ -74,21 +74,21 @@
         {
           "refId": "A",
           "expr": "count(count by (src_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "Active Sources",
           "instant": true
         },
         {
           "refId": "B",
           "expr": "count(count by (dest_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "Destinations",
           "instant": true
         },
         {
           "refId": "C",
           "expr": "count_over_time({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} [2h])",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "Total Connections"
         }
       ],
@@ -126,7 +126,7 @@
         {
           "refId": "A",
           "expr": "sum by (proto) (rate({job=~\"suricata|zeek\", proto=~\"$protocol\"} |= \"\" [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
@@ -185,7 +185,7 @@
         {
           "refId": "A",
           "expr": "topk(10, count by (src_ip) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} [2h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -251,7 +251,7 @@
         {
           "refId": "A",
           "expr": "count by (conn_state) (count_over_time({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} [2h]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -303,7 +303,7 @@
         {
           "refId": "A",
           "expr": "topk(10, count by (dest_port) (count_over_time({job=~\"suricata|zeek\", proto=~\"$protocol\"} | json | dest_port != \"\" [2h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -372,7 +372,7 @@
         {
           "refId": "A",
           "expr": "{job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | line_format \"{{.src_ip}}|{{.dest_ip}}|{{.proto}}|{{.dest_port}}|{{.duration}}|{{.orig_bytes}}|{{.resp_bytes}}|{{.conn_state}}\"",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
@@ -448,7 +448,7 @@
         {
           "refId": "A",
           "expr": "topk(10, count by (weird_name) (count_over_time({job=\"zeek\", log_type=\"weird\"} [2h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -514,13 +514,13 @@
         {
           "refId": "A",
           "expr": "sum(rate({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | orig_bytes != \"\" | unwrap orig_bytes [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "Outbound Traffic"
         },
         {
           "refId": "B",
           "expr": "sum(rate({job=\"zeek\", log_type=\"conn\", proto=~\"$protocol\"} | json | resp_bytes != \"\" | unwrap resp_bytes [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "Inbound Traffic"
         }
       ],

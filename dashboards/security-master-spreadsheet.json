@@ -10,7 +10,7 @@
     "from": "now-6h",
     "to": "now"
   },
-  "refresh": "30s",
+  "refresh": "10s",
   "schemaVersion": 39,
   "version": 1,
   "templating": {
@@ -36,7 +36,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       },
       {
@@ -60,7 +60,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       }
     ]
@@ -68,26 +68,20 @@
   "panels": [
     {
       "id": 1,
-      "title": "� Current Alert Summary",
+      "title": "Current Alert Summary",
       "type": "stat",
       "targets": [
         {
           "refId": "A",
-          "expr": "count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"1\", alert_category=~\"$category\"}[1h])",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "legendFormat": "🔴 High"
-        },
-        {
-          "refId": "B",
-          "expr": "count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"2\", alert_category=~\"$category\"}[1h])",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "legendFormat": "🟠 Medium"
+          "expr": "sum by () (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"1\"}[5m]))",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "legendFormat": "🔴 High (Severity 1)"
         },
         {
           "refId": "C",
           "expr": "count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"3\", alert_category=~\"$category\"}[1h])",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "legendFormat": "🟡 Low"
+          "datasource": { "type": "loki", "uid": "loki" },
+          "legendFormat": "🟡 Low (Severity 3)"
         }
       ],
       "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
@@ -101,7 +95,9 @@
         "graphMode": "none",
         "orientation": "horizontal",
         "textMode": "value_and_name",
-        "wideLayout": true
+        "wideLayout": true,
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false
       },
       "fieldConfig": {
         "defaults": {
@@ -116,30 +112,28 @@
           "mappings": [
             {
               "options": {
-                "0": { "text": "✅ No Alerts" }
+                "0": { "text": "✅ No Alerts", "color": "green" }
               },
               "type": "value"
             }
           ],
-          "unit": "short"
+          "unit": "short",
+          "min": 0,
+          "max": 100
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "🔴 High" },
+            "matcher": { "id": "byName", "options": "🔴 High (Severity 1)" },
             "properties": [
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+              { "id": "custom.hideFrom.legend", "value": false }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "🟠 Medium" },
+            "matcher": { "id": "byName", "options": "🟡 Low (Severity 3)" },
             "properties": [
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "🟡 Low" },
-            "properties": [
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } },
+              { "id": "custom.hideFrom.legend", "value": false }
             ]
           }
         ]
@@ -153,7 +147,7 @@
         {
           "refId": "A",
           "expr": "sum by (alert_severity) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\"} |= \"\" [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
@@ -211,13 +205,6 @@
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "alert_severity=2" },
-            "properties": [
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
-              { "id": "displayName", "value": "Medium (Sev 2)" }
-            ]
-          },
-          {
             "matcher": { "id": "byName", "options": "alert_severity=3" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } },
@@ -235,7 +222,7 @@
         {
           "refId": "A",
           "expr": "topk(15, count by (alert_signature) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json [6h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -309,7 +296,7 @@
         {
           "refId": "A",
           "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=\"1\"} | json | line_format \"{{.timestamp}}|{{.src_ip}}:{{.src_port}}|{{.dest_ip}}:{{.dest_port}}|{{.proto}}|{{.alert.signature}}|{{.alert.category}}\"",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 22 },
@@ -381,7 +368,7 @@
         {
           "refId": "A",
           "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\"} | json",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 14, "w": 24, "x": 0, "y": 32 },

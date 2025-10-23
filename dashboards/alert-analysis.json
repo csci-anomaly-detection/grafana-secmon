@@ -10,7 +10,7 @@
     "from": "now-6h",
     "to": "now"
   },
-  "refresh": "1m",
+  "refresh": "10s",
   "schemaVersion": 39,
   "version": 1,
   "templating": {
@@ -36,7 +36,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       },
       {
@@ -60,7 +60,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       },
       {
@@ -84,7 +84,7 @@
         "type": "query",
         "datasource": {
           "type": "loki",
-          "uid": "${DS_LOKI}"
+          "uid": "loki"
         }
       }
     ]
@@ -98,7 +98,7 @@
         {
           "refId": "A",
           "expr": "sum by (le) (rate({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} |= \"\" [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
@@ -148,7 +148,7 @@
         {
           "refId": "A",
           "expr": "topk(15, count by (alert_signature) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json [6h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -220,7 +220,7 @@
         {
           "refId": "A",
           "expr": "topk(10, count by (src_ip) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} [6h])))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "instant": true
         }
       ],
@@ -285,8 +285,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (alert_severity) (rate({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} |= \"\" [5m]))",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "expr": "sum by (alert_severity) (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} |= \"\" [1m]))",
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
@@ -314,7 +314,7 @@
             "pointSize": 5,
             "stacking": { "mode": "none", "group": "A" },
             "axisPlacement": "auto",
-            "axisLabel": "Alerts per second",
+            "axisLabel": "Alerts per minute",
             "axisColorMode": "text",
             "scaleDistribution": { "type": "linear" },
             "hideFrom": {
@@ -333,25 +333,18 @@
               { "color": "red", "value": 80 }
             ]
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": [
           {
-            "matcher": { "id": "byRegexp", "options": "/.*1.*/" },
+            "matcher": { "id": "byName", "options": "alert_severity=1" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
               { "id": "displayName", "value": "High Severity" }
             ]
           },
           {
-            "matcher": { "id": "byRegexp", "options": "/.*2.*/" },
-            "properties": [
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
-              { "id": "displayName", "value": "Medium Severity" }
-            ]
-          },
-          {
-            "matcher": { "id": "byRegexp", "options": "/.*3.*/" },
+            "matcher": { "id": "byName", "options": "alert_severity=3" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } },
               { "id": "displayName", "value": "Low Severity" }
@@ -368,7 +361,7 @@
         {
           "refId": "A",
           "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json | line_format \"{{.src_ip}} {{.dest_ip}} {{.alert.severity}}\"",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
@@ -405,7 +398,7 @@
         {
           "refId": "A",
           "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 12, "w": 24, "x": 0, "y": 26 },
@@ -428,7 +421,7 @@
         {
           "refId": "A",
           "expr": "{job=\"suricata\", event_type=\"alert\", alert_severity=~\"$severity\", alert_category=~\"$category\", src_ip=~\"$src_ip\"} | json | line_format \"{{.timestamp}}|{{.src_ip}}|{{.dest_ip}}|{{.proto}}|{{.src_port}}|{{.dest_port}}|{{.alert.signature_id}}|{{.alert.signature}}|{{.alert.category}}|{{.alert.severity}}\"",
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" }
+          "datasource": { "type": "loki", "uid": "loki" }
         }
       ],
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 38 },
@@ -475,7 +468,6 @@
             {
               "options": {
                 "1": { "text": "High", "color": "red" },
-                "2": { "text": "Medium", "color": "orange" },
                 "3": { "text": "Low", "color": "yellow" }
               },
               "type": "value"
