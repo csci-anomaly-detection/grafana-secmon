@@ -30,6 +30,7 @@ scrape_configs:
           protocol:
           src_ip:
           dest_ip:
+          event_type: alert  # ADD: Mark fast.log entries as alerts
       - timestamp:
           source: timestamp
           format: 02/01/2006-15:04:05.000000
@@ -59,10 +60,11 @@ scrape_configs:
             alert_severity: alert.severity
             flow_id: flow_id
       - labels:
-          event_type:
+          event_type: 
           proto:
           alert_category:
           alert_severity:
+          alert_signature: 
       - timestamp:
           source: timestamp
           format: RFC3339
@@ -95,6 +97,7 @@ scrape_configs:
           job: zeek
           log_type: conn
           environment: campus-sim
+          service_name: zeek  # ADD: Match expected label in error message
           __path__: /var/log/campus-sim/zeek/conn.log
     pipeline_stages:
       - json:
@@ -112,9 +115,7 @@ scrape_configs:
             resp_bytes: resp_bytes
       - labels:
           proto:
-          src_ip:
-          dest_ip:
-          conn_state:
+          conn_state:  # Keep conn_state as label
       - timestamp:
           source: ts
           format: Unix

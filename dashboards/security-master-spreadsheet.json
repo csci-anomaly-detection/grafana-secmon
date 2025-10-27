@@ -68,18 +68,18 @@
   "panels": [
     {
       "id": 1,
-      "title": "Current Alert Summary",
+      "title": "Current Alert Summary (Last Hour by Default)",
       "type": "stat",
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by () (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"1\"}[5m]))",
+          "expr": "sum by () (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"1\"}[$__range]))",
           "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "🔴 High (Severity 1)"
         },
         {
           "refId": "C",
-          "expr": "count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"3\", alert_category=~\"$category\"}[1h])",
+          "expr": "sum by () (count_over_time({job=\"suricata\", event_type=\"alert\", alert_severity=\"3\"}[$__range]))",
           "datasource": { "type": "loki", "uid": "loki" },
           "legendFormat": "🟡 Low (Severity 3)"
         }
@@ -141,7 +141,7 @@
     },
     {
       "id": 2,
-      "title": "Alert Timeline (Last 6 Hours)",
+      "title": "Alert Timeline (Last Hour by Default)",
       "type": "timeseries",
       "targets": [
         {
