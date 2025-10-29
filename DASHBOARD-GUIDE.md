@@ -2,36 +2,28 @@
 
 This guide provides detailed information about each dashboard in the AI-Augmented Security Monitoring system.
 
-## 🎯 Quick Navigation
-
-| Dashboard | Purpose | Best For | Complexity |
-|-----------|---------|----------|------------|
-| [Security Master Spreadsheet](#-security-master-spreadsheet) | Unified view | All-in-one monitoring | ⭐⭐ Medium |
-| [Alert Analysis](#-alert-analysis---deep-dive) | Investigations | Analysts, incidents | ⭐⭐⭐ Advanced |
-| [Network Traffic](#-network-traffic-analysis) | Network monitoring | Admins, capacity | ⭐⭐⭐ Advanced |
-
 ---
 
-## � Security Master Spreadsheet
+## Security Master Spreadsheet
 **⏱ Time Range:** Last 6 hours | **🔄 Refresh:** 30 seconds
 
 ### Purpose
 Unified all-in-one dashboard combining critical elements from multiple views into a single comprehensive monitoring interface.
 
 ### What You'll See
-- **📊 Current Alert Summary**: Visual count of High/Medium/Low severity alerts with emoji indicators (🔴 High, 🟠 Medium, 🟡 Low)
-- **📈 Alert Timeline**: 6-hour trend graph showing alert patterns by severity over time
-- **📋 Alert Signatures by Frequency**: Top 15 most common attack signatures detected
-- **🚨 Recent Critical Alerts**: Real-time table of Severity 1 (High) alerts with full details
-- **📜 All Live Security Logs**: Real-time log feed with JSON formatting and full event details
+- **Current Alert Summary**: Visual count of High/Medium/Low severity alerts with emoji indicators (🔴 High, 🟠 Medium, 🟡 Low)
+- **Alert Timeline**: 6-hour trend graph showing alert patterns by severity over time
+- **Alert Signatures by Frequency**: Top 15 most common attack signatures detected
+- **Recent Critical Alerts**: Real-time table of Severity 1 (High) alerts with full details
+- **All Live Security Logs**: Real-time log feed with JSON formatting and full event details
 
 ### Best Use Cases
-- ✅ **Primary monitoring dashboard** - Single view for most common tasks
-- ✅ **Daily security review** - All essential information in one place
-- ✅ **Incident response** - Quick access to critical alerts and live logs
-- ✅ **SOC operations** - Comprehensive view for security analysts
-- ✅ **Executive briefings** - High-level summary with drill-down capability
-- ✅ **Shift handovers** - Complete picture of security posture
+- **Primary monitoring dashboard** - Single view for most common tasks
+- **Daily security review** - All essential information in one place
+- **Incident response** - Quick access to critical alerts and live logs
+- **SOC operations** - Comprehensive view for security analysts
+- **Executive briefings** - High-level summary with drill-down capability
+- **Shift handovers** - Complete picture of security posture
 
 ### Key Features
 - **Compact Summary**: Horizontal stat panel showing all severity levels at once
@@ -50,58 +42,28 @@ Unified all-in-one dashboard combining critical elements from multiple views int
 
 ---
 
-## 🔍 Alert Analysis - Deep Dive
-**⏱ Time Range:** Last 6 hours | **🔄 Refresh:** 1 minute
-
-### Purpose
-Detailed forensic analysis dashboard for incident investigation and threat hunting.
-
-### What You'll See
-- **🌡️ Alert Frequency Heatmap**: Visual pattern analysis over time
-- **📋 Top Alert Signatures**: Most frequent attack patterns
-- **🔍 Source IP Analysis**: Detailed breakdown of attacking systems
-- **📊 Alert Trend by Severity**: Time-series graph of alert criticality
-- **🕸️ Communication Patterns**: Network graph of connections
-- **📜 Live Log Feed**: Real-time detailed log stream
-- **📈 Alert Correlation Matrix**: Full details of all security events
-
-### Best Use Cases
-- ✅ **Incident response** - Deep investigation of security events
-- ✅ **Threat hunting** - Proactive search for advanced threats
-- ✅ **Forensic analysis** - Post-incident investigation
-- ✅ **Attack pattern analysis** - Understanding attacker behavior
-- ✅ **Security research** - Analyzing new attack techniques
-
-### Advanced Features
-- **Interactive Filters**: Severity, category, source IP selection
-- **Drill-down Capability**: Click on metrics to filter other panels
-- **Correlation View**: See relationships between different alerts
-- **Time Navigation**: Easily jump to specific time periods
-
----
-
-## 🌐 Network Traffic Analysis
-**⏱ Time Range:** Last 2 hours | **🔄 Refresh:** 30 seconds
+## Network Traffic Analysis
+**Time Range:** Last 2 hours | **🔄 Refresh:** 30 seconds
 
 ### Purpose
 Network behavior monitoring focusing on traffic patterns, connections, and anomalies.
 
 ### What You'll See
-- **📊 Network Overview**: Active sources, destinations, total connections
-- **📈 Traffic Volume by Protocol**: Time-series of network protocols
-- **🗣️ Top Talkers**: Most active systems by volume
-- **🔗 Connection States**: Zeek analysis of connection health
-- **🚪 Port Distribution**: Most accessed network services
-- **🗺️ Network Communication Matrix**: Detailed connection logs
-- **⚠️ Weird Events**: Network anomalies detected by Zeek
-- **📊 Traffic Flow Visualization**: Inbound vs outbound data flows
+- **Network Overview**: Active sources, destinations, total connections
+- **Traffic Volume by Protocol**: Time-series of network protocols
+- **Top Talkers**: Most active systems by volume
+- **Connection States**: Zeek analysis of connection health
+- **Port Distribution**: Most accessed network services
+- **Network Communication Matrix**: Detailed connection logs
+- **Weird Events**: Network anomalies detected by Zeek
+- **Traffic Flow Visualization**: Inbound vs outbound data flows
 
 ### Best Use Cases
-- ✅ **Network administration** - Understanding traffic patterns
-- ✅ **Capacity planning** - Bandwidth and connection analysis
-- ✅ **Anomaly detection** - Spotting unusual network behavior
-- ✅ **Service monitoring** - Checking network service health
-- ✅ **Performance optimization** - Identifying network bottlenecks
+- **Network administration** - Understanding traffic patterns
+- **Capacity planning** - Bandwidth and connection analysis
+- **Anomaly detection** - Spotting unusual network behavior
+- **Service monitoring** - Checking network service health
+- **Performance optimization** - Identifying network bottlenecks
 
 ### Key Insights
 - **Connection States**: Normal (SF), Failed (S0), Rejected (REJ), etc.
@@ -111,11 +73,10 @@ Network behavior monitoring focusing on traffic patterns, connections, and anoma
 
 ---
 
-## 🛠️ Dashboard Usage Tips
+## Dashboard Usage Tips
 
 ### Getting Started
 1. **Start with "Security Master Spreadsheet"** - unified view of all critical information
-2. **Use "Alert Analysis - Deep Dive"** - for detailed investigations
 3. **Check "Network Traffic Analysis"** - for network-specific issues
 
 ### Troubleshooting
@@ -139,7 +100,7 @@ Network behavior monitoring focusing on traffic patterns, connections, and anoma
 
 ---
 
-## 📞 Support & Troubleshooting
+## Support & Troubleshooting
 
 ### Common Issues
 - **Empty dashboards**: Check Promtail is running and collecting logs
@@ -166,5 +127,5 @@ docker logs promtail-secmon
 
 ---
 
-*Last Updated: October 19, 2025*
+*Last Updated: October 29, 2025*
 *Version: Campus Security Monitoring v1.0*

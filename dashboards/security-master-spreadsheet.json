@@ -68,7 +68,7 @@
   "panels": [
     {
       "id": 1,
-      "title": "Current Alert Summary (Last Hour by Default)",
+      "title": "Current Alert Summary",
       "type": "stat",
       "targets": [
         {
@@ -141,7 +141,7 @@
     },
     {
       "id": 2,
-      "title": "Alert Timeline (Last Hour by Default)",
+      "title": "Alert Timeline",
       "type": "timeseries",
       "targets": [
         {
@@ -305,7 +305,9 @@
           "id": "extractFields",
           "options": {
             "format": "auto",
-            "source": "Line"
+            "source": "Line",
+            "replace": true,
+            "keepTime": false
           }
         },
         {
@@ -319,13 +321,38 @@
               "Field 5": "Alert Signature",
               "Field 6": "Category"
             },
-            "excludeByName": { "Time": true, "Line": true, "id": true, "labels": true, "tsNs": true }
+            "excludeByName": { 
+              "Time": true, 
+              "Line": true, 
+              "id": true, 
+              "labels": true, 
+              "tsNs": true,
+              "flow_id": true,
+              "src_ip": true,
+              "src_port": true,
+              "dest_ip": true,
+              "dest_port": true
+            },
+            "indexByName": {
+              "Field 1": 0,
+              "Field 2": 1,
+              "Field 3": 2,
+              "Field 4": 3,
+              "Field 5": 4,
+              "Field 6": 5
+            }
           }
         }
       ],
       "options": {
         "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Timestamp" }]
+        "sortBy": [{ "desc": true, "displayName": "Timestamp" }],
+        "footer": {
+          "show": false,
+          "reducer": ["sum"],
+          "countRows": false,
+          "fields": ""
+        }
       },
       "fieldConfig": {
         "defaults": {
